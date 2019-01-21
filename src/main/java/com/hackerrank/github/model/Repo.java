@@ -1,6 +1,7 @@
 package com.hackerrank.github.model;
 
 public class Repo {
+
     private Long id;
     private String name;
     private String url;
