@@ -3,6 +3,7 @@ import javax.jpa.Entity;
 
 @Entity
 public class Actor {
+
     private Long id;
     private String login;
     private String avatar;
