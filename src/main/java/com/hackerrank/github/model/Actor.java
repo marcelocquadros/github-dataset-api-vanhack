@@ -1,6 +1,6 @@
 package com.hackerrank.github.model;
 import javax.jpa.Entity;
-import javax.jpa.
+import javax.jpa.I
 @Entity
 public class Actor {
     @Id
