@@ -3,6 +3,7 @@ package com.hackerrank.github.model;
 @Entity
 public class Actor {
     @Id
+    @GeneratedValue
     private Long id;
     private String login;
     private String avatar;
