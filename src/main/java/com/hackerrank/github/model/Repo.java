@@ -1,7 +1,7 @@
 package com.hackerrank.github.model;
 
 public class Repo {
-    @Id(ge)
+    @Id(Gen)
     private Long id;
     private String name;
     private String url;
