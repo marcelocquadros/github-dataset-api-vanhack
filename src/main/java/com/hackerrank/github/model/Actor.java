@@ -1,5 +1,5 @@
 package com.hackerrank.github.model;
-
+i
 @Entity
 public class Actor {
     private Long id;
