@@ -1,5 +1,6 @@
 package com.hackerrank.github.model;
 
+
 public class Actor {
     private Long id;
     private String login;
