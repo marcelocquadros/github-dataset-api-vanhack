@@ -1,6 +1,6 @@
 package com.hackerrank.github.model;
 
-@Ent
+@Entity
 public class Actor {
     private Long id;
     private String login;
