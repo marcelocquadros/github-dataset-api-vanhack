@@ -1,5 +1,5 @@
 package com.hackerrank.github.model;
-import javax
+import javax.jp
 @Entity
 public class Actor {
     private Long id;
