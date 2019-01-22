@@ -1,10 +1,10 @@
 package com.hackerrank.github.controller;
 
 import com.hackerrank.github.exceptions.ActorNotFoundException;
-import com.hackerrank.github.exceptions.EventAlreadyExistsException;
 import com.hackerrank.github.model.Actor;
+import com.hackerrank.github.model.ActorStatistics;
 import com.hackerrank.github.model.Event;
-import com.hackerrank.github.model.Repo;
+
 import com.hackerrank.github.repository.ActorRepository;
 import com.hackerrank.github.repository.EventRepository;
 import com.hackerrank.github.repository.RepoRepository;
@@ -15,8 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 public class GithubApiRestController {
@@ -74,6 +75,7 @@ public class GithubApiRestController {
        Actor actorDB =  this.actorRepository.findOne(actor.getId());
        if(actorDB == null){
            LOG.error("Actor id {} not found", actor.getId());
+           throw new ActorNotFoundException();
        }
 
        if(actor.getLogin() != null){
@@ -88,8 +90,39 @@ public class GithubApiRestController {
        return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/actors")
+    public List<ActorStatistics> listActorRecordsByNumberEvents(){
+
+        List<ActorStatistics> eventStatistics = eventRepository.findActorStatistics();
+
+       // eventStatistics.stream().forEach(System.out::println);
+
+        eventStatistics =  eventStatistics.stream().sorted(new Comparator<ActorStatistics>() {
+            @Override
+            public int compare(ActorStatistics o1, ActorStatistics o2) {
+                return o2.getCount().compareTo(o1.getCount());
+            }
+        }).collect(Collectors.toList()).stream().sorted(new Comparator<ActorStatistics>() {
+            @Override
+            public int compare(ActorStatistics o1, ActorStatistics o2) {
+                if(o1.getCount() == o2.getCount()){
+                    return o2.getLastEventDate().compareTo(o1.getLastEventDate());
+                }
+                return 0;
+            }
+        }).collect(Collectors.toList()).stream().sorted(new Comparator<ActorStatistics>() {
+            @Override
+            public int compare(ActorStatistics o1, ActorStatistics o2) {
+                if((o2.getCount() == o1.getCount())
+                        && o1.getLastEventDate() == o2.getLastEventDate() ){
+                    o1.getLogin().compareTo(o2.getLogin());
+                }
+                return 0;
+            }
+        }).collect(Collectors.toList());
 
 
-
+        return eventStatistics;
+    }
 
 }
