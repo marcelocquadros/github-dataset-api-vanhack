@@ -1,10 +1,19 @@
 package com.hackerrank.github.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 @Entity
 public class Actor {
-   
+
+    @Id
     private Long id;
+
     private String login;
+
+    @JsonProperty("avatar_url")
     private String avatar;
 
     public Actor() {

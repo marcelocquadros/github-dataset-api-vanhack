@@ -1,12 +1,32 @@
 package com.hackerrank.github.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.validation.constraints.NotNull;
 import java.sql.Timestamp;
 
+@Entity
 public class Event {
+
+    @Id
     private Long id;
+
     private String type;
+
+    @ManyToOne(cascade = CascadeType.MERGE)
     private Actor actor;
+
+    @ManyToOne(cascade = CascadeType.MERGE)
     private Repo repo;
+
+    @JsonProperty("created_at")
+    @JsonFormat(shape=JsonFormat.Shape.STRING, pattern="yyyy-MM-dd HH:mm:ss")
     private Timestamp createdAt;
 
     public Event() {

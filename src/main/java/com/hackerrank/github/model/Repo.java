@@ -1,9 +1,19 @@
 package com.hackerrank.github.model;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.validation.constraints.NotNull;
+
+@Entity
 public class Repo {
-    
+
+    @Id
     private Long id;
+
+    @NotNull
     private String name;
+
+    @NotNull
     private String url;
 
     public Repo() {
