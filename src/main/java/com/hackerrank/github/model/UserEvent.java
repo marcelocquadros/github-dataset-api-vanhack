@@ -14,7 +14,7 @@ public class UserEvent {
     @JsonIgnore
     private Date createdAt;
     @JsonIgnore
-    private Long count;
+    private Long count = 0L;
 
     public UserEvent(){
 

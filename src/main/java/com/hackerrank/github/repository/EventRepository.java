@@ -43,4 +43,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "ORDER BY " +
             "    e.actor.login")
     List<UserEvent> findUserEventsGroupByUser();
+
+
 }

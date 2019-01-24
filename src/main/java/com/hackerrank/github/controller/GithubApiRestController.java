@@ -1,11 +1,13 @@
 package com.hackerrank.github.controller;
 
+import antlr.collections.impl.IntRange;
 import com.hackerrank.github.exceptions.ActorNotFoundException;
 import com.hackerrank.github.exceptions.EventAlreadyExistsException;
 import com.hackerrank.github.model.*;
 import com.hackerrank.github.repository.ActorRepository;
 import com.hackerrank.github.repository.EventRepository;
 import com.hackerrank.github.repository.RepoRepository;
+import com.sun.tools.corba.se.idl.InterfaceGen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /*
 Returning the actor records ordered by the maximum streak:
@@ -48,7 +51,7 @@ public class GithubApiRestController {
 
     @DeleteMapping("/erase")
     public void eraseEvents(){
-        this.eventRepository.deleteAllInBatch();
+        this.eventRepository.deleteAll();
     }
 
     @PostMapping("/events")
@@ -60,20 +63,20 @@ public class GithubApiRestController {
             return ResponseEntity.status(HttpStatus.CREATED).build();
         }
 
-        if(event.getActor().getId() == 1004994 ){
-            System.out.println("XXXXXX"+ event.getActor());
-        }
 
+        //prevent to update user in
         Actor actorDB = this.actorRepository.findOne(event.getActor().getId());
 
         if(actorDB == null){
-            this.actorRepository.save(event.getActor());
+            actorDB = this.actorRepository.save(event.getActor());
         }
 
         Repo repoDB = this.repoRepository.findOne(event.getRepo().getId());
         if(repoDB == null){
-            this.repoRepository.save(event.getRepo());
+            repoDB = this.repoRepository.save(event.getRepo());
         }
+        event.setRepo(repoDB);
+        event.setActor(actorDB);
 
         this.eventRepository.save(event);
 
@@ -156,8 +159,6 @@ public class GithubApiRestController {
     @GetMapping("/actors/streak")
     public List<UserEvent> findActorStreakStatics(){
 
-        Map<String, StreakInfo> mapStreack = new HashMap<>();
-
         List<UserEvent> eventStatistics = this.eventRepository.findUserEventsGroupByUser(); //builActorStatiscts();//eventRepository.findActorStatistics();
 
         //events grouped by user
@@ -174,10 +175,8 @@ public class GithubApiRestController {
 
                         @Override
                         public int compare(UserEvent o1, UserEvent o2) {
-                            if (o1.getLogin().equals(o2.getLogin())) {
-                                return o1.getCreatedAt().compareTo(o2.getCreatedAt());
-                            }
-                            return 0;
+                            return o1.getCreatedAt().compareTo(o2.getCreatedAt());
+
                         }
                     }).collect(Collectors.toList());
 
@@ -189,6 +188,7 @@ public class GithubApiRestController {
         Long consecutiveEvents = 0L;
         String currentUser = null;
         Long maxConsecutiveEvents = 0L;
+        Calendar calendarTemp = Calendar.getInstance();
 
         Map<String, UserEvent> userEventCount = new HashMap<>();
 
@@ -201,14 +201,31 @@ public class GithubApiRestController {
                     consecutiveEvents = 0L; //reset consecutive days
                     maxConsecutiveEvents = 0L;
                     userEventCount.put(e.getLogin(), e);
-                    //continue;
+                    calendarTemp.setTime(dateTemp);
+                    continue;
                 }
 
-                long diffInMillies = Math.abs(e.getCreatedAt().getTime() - dateTemp.getTime());
-                long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
 
-                if(diff <= 1){
+
+
+                Calendar created = Calendar.getInstance();
+                created.setTime(e.getCreatedAt());
+
+                calendarTemp.add(Calendar.DAY_OF_MONTH, 1);
+
+
+
+
+
+
+                //long diffInMillies = Math.abs(e.getCreatedAt().getTime() - dateTemp.getTime());
+                //long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.HOURS);
+
+               // if(diff < 1  ){
+                if((created.get(Calendar.DAY_OF_MONTH) == calendarTemp.get(Calendar.DAY_OF_MONTH))){
+
                     consecutiveEvents++;
+                    userEventCount.put(e.getLogin(), e);
                 } else {
                     consecutiveEvents = 0L; //reset consecutive events
                 }
@@ -216,42 +233,46 @@ public class GithubApiRestController {
                 if(maxConsecutiveEvents < consecutiveEvents){
                     maxConsecutiveEvents = consecutiveEvents;
                 }
-                userEventCount.put(e.getLogin(), e);
+
                 userEventCount.get(currentUser).setCount(maxConsecutiveEvents);
                 dateTemp = e.getCreatedAt();
             }
 
         }
 
+        List<UserEvent> result =
+                userEventCount.entrySet()
+                        .stream()
+                        .map(e -> e.getValue())
+                        .sorted(new Comparator<UserEvent>() {
+                            @Override
+                            public int compare(UserEvent o1, UserEvent o2) {
+                                return o2.getCount().compareTo(o1.getCount());
+                            }
+                        })
+                        .sorted(new Comparator<UserEvent>() {
 
-       List<UserEvent> result = userEventCount.entrySet().stream().map(e -> e.getValue())
-                .sorted(new Comparator<UserEvent>() {
-                    @Override
-                    public int compare(UserEvent o1, UserEvent o2) {
-                        return o2.getCount().compareTo(o1.getCount());
-                    }
-                })
-                .sorted(new Comparator<UserEvent>() {
+                            @Override
+                            public int compare(UserEvent o1, UserEvent o2) {
+                                if(o1.getCount() == o2.getCount()){
+                                    return o2.getCreatedAt().compareTo(o1.getCreatedAt());
+                                }
+                                return 0;
+                            }
+                        })
+                        .sorted(new Comparator<UserEvent>() {
 
-                    @Override
-                    public int compare(UserEvent o1, UserEvent o2) {
-                        if(o1.getCount().equals(o2.getCount())){
-                            return o2.getCreatedAt().compareTo(o1.getCreatedAt());
-                        }
-                        return 0;
-                    }
-                })
-                .sorted(new Comparator<UserEvent>() {
+                            @Override
+                            public int compare(UserEvent o1, UserEvent o2) {
+                                if(o2.getCreatedAt().equals(o1.getCreatedAt())
+                                        && o2.getCount() == (o1.getCount())
+                                        && !o2.getLogin().equals(o1.getLogin()) ){
 
-                    @Override
-                    public int compare(UserEvent o1, UserEvent o2) {
-                        if( o1.getCount().equals(o2.getCount())
-                                && o1.getCreatedAt().equals(o2.getCreatedAt())){
-                            return o1.getLogin().compareTo(o2.getLogin());
-                        }
-                        return 0;
-                    }
-                }).collect(Collectors.toList());
+                                    return o1.getLogin().compareTo(o2.getLogin());
+                                }
+                                return 0;
+                            }
+                        }).collect(Collectors.toList());
 
         return result;
 
@@ -288,10 +309,15 @@ public class GithubApiRestController {
 
         return as;
     }
-//
-//    public static  void main(String arsg[]){
-//        new GithubApiRestController().findActorStreakStatics();
-//    }
+
+    public static  void main(String arsg[]){
+        Calendar c1 = Calendar.getInstance();
+        Calendar c2 = Calendar.getInstance();
+
+        c1.add(Calendar.HOUR_OF_DAY, 23);
+
+        System.out.println(c1.get(Calendar.DAY_OF_MONTH) - c2.get(Calendar.DAY_OF_MONTH));
+    }
 
 
 }
