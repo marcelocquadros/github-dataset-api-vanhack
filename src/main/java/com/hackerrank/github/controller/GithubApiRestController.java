@@ -48,7 +48,7 @@ public class GithubApiRestController {
 
     @DeleteMapping("/erase")
     public void eraseEvents(){
-        this.eventRepository.deleteAll();
+        this.eventRepository.deleteAllInBatch();
     }
 
     @PostMapping("/events")
@@ -56,7 +56,12 @@ public class GithubApiRestController {
 
         if(this.eventRepository.findOne(event.getId()) != null){
             LOG.error("The resource id: {} already exists", event.getId());
-            throw new EventAlreadyExistsException();
+            //throw new EventAlreadyExistsException();
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        }
+
+        if(event.getActor().getId() == 1004994 ){
+            System.out.println("XXXXXX"+ event.getActor());
         }
 
         Actor actorDB = this.actorRepository.findOne(event.getActor().getId());

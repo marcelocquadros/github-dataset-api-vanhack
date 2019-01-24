@@ -2,15 +2,17 @@ package com.hackerrank.github.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.UniqueConstraint;
 
 @Entity
 public class Actor {
 
     @Id
     private Long id;
-
+    @Column(unique = true)
     private String login;
 
     @JsonProperty("avatar_url")
