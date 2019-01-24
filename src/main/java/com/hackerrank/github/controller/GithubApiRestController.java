@@ -59,6 +59,17 @@ public class GithubApiRestController {
             throw new EventAlreadyExistsException();
         }
 
+        Actor actorDB = this.actorRepository.findOne(event.getActor().getId());
+
+        if(actorDB == null){
+            this.actorRepository.save(event.getActor());
+        }
+
+        Repo repoDB = this.repoRepository.findOne(event.getRepo().getId());
+        if(repoDB == null){
+            this.repoRepository.save(event.getRepo());
+        }
+
         this.eventRepository.save(event);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -90,9 +101,9 @@ public class GithubApiRestController {
             throw new ActorNotFoundException();
         }
 
-        if(actor.getLogin() != null){
+        if(!actorDB.getLogin().equals(actor.getLogin())){
             LOG.error("Login can not be updated");
-            //return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
         actorDB.setAvatar(actor.getAvatar());
