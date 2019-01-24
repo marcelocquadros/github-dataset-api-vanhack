@@ -1,13 +1,10 @@
 package com.hackerrank.github.controller;
 
-import antlr.collections.impl.IntRange;
 import com.hackerrank.github.exceptions.ActorNotFoundException;
-import com.hackerrank.github.exceptions.EventAlreadyExistsException;
 import com.hackerrank.github.model.*;
 import com.hackerrank.github.repository.ActorRepository;
 import com.hackerrank.github.repository.EventRepository;
 import com.hackerrank.github.repository.RepoRepository;
-import com.sun.tools.corba.se.idl.InterfaceGen;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /*
 Returning the actor records ordered by the maximum streak:
