@@ -9,7 +9,10 @@ public class ActorStatistics {
 
     private Long id;
     private String login;
+
+    @JsonIgnore
     private Long count;
+
     @JsonProperty("avatar_url")
     private String avatar;
 
