@@ -190,7 +190,6 @@ public class GithubApiRestController {
 
                 long diffInMillies = Math.abs(e.getCreatedAt().getTime() - dateTemp.getTime());
                 long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS);
-                System.out.println("Diferenca >>>  "+ diff);
 
                 if(diff <= 1){
                     consecutiveEvents++;
