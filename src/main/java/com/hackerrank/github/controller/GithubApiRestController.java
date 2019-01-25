@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /*
@@ -108,31 +109,29 @@ public class GithubApiRestController {
 
         List<ActorStatistics> eventStatistics = eventRepository.findActorStatistics();
 
-        eventStatistics =  eventStatistics.stream().sorted(new Comparator<ActorStatistics>() {
-            @Override
-            public int compare(ActorStatistics o1, ActorStatistics o2) {
-                return o2.getCount().compareTo(o1.getCount());
-            }
-        }).collect(Collectors.toList()).stream().sorted(new Comparator<ActorStatistics>() {
-            @Override
-            public int compare(ActorStatistics o1, ActorStatistics o2) {
-                if(o1.getCount() == o2.getCount()){
-                    return o2.getLastEventDate().compareTo(o1.getLastEventDate());
-                }
-                return 0;
-            }
-        }).collect(Collectors.toList()).stream().sorted(new Comparator<ActorStatistics>() {
-            @Override
-            public int compare(ActorStatistics o1, ActorStatistics o2) {
-                if((o2.getCount() == o1.getCount())
-                        && o1.getLastEventDate().equals(o2.getLastEventDate())){
+        eventStatistics =  eventStatistics.stream()
+                .sorted(Comparator.comparing(ActorStatistics::getCount).reversed())
+                .collect(Collectors.toList()).stream()
+                .sorted((o1, o2) -> {
 
-                    o1.getLogin().compareTo(o2.getLogin());
+                    if(o1.getCount() == o2.getCount()){
+                        return o2.getLastEventDate().compareTo(o1.getLastEventDate());
+                    }
+                    return 0;
+                })
+                .collect(Collectors.toList()).stream()
+                .sorted((o1, o2) -> {
 
-                }
-                return 0;
-            }
-        }).collect(Collectors.toList());
+                    if ((o2.getCount() == o1.getCount())
+                            && o1.getLastEventDate().equals(o2.getLastEventDate())) {
+
+                        o1.getLogin().compareTo(o2.getLogin());
+
+                    }
+                    return 0;
+
+                })
+                .collect(Collectors.toList());
 
 
         return eventStatistics;
@@ -141,32 +140,26 @@ public class GithubApiRestController {
     @GetMapping("/actors/streak")
     public List<UserEvent> findActorStreakStatics(){
 
-        List<UserEvent> eventStatistics = this.eventRepository.findUserEventsGroupByUser(); //builActorStatiscts();//eventRepository.findActorStatistics();
+        List<UserEvent> eventStatistics = this.eventRepository.findUserEventsGroupByUser();
 
-        //events grouped by user
+        //events grouped by user login
         Map<String, List<UserEvent>> userEventsMap =
                 eventStatistics.stream().collect(Collectors.groupingBy(UserEvent::getLogin));
 
         Map<String,List<UserEvent>> userEventsSortedByDate = new HashMap<>();
 
 
-        userEventsMap.entrySet().forEach( entry -> {
+        for (Map.Entry<String, List<UserEvent>> entry : userEventsMap.entrySet()) {
 
             List<UserEvent> listSortedEvents = entry.getValue().stream()
-                    .sorted(new Comparator<UserEvent>() {
-
-                        @Override
-                        public int compare(UserEvent o1, UserEvent o2) {
-                            return o1.getCreatedAt().compareTo(o2.getCreatedAt());
-
-                        }
-                    }).collect(Collectors.toList());
+                    .sorted(Comparator.comparing(UserEvent::getCreatedAt))
+                    .collect(Collectors.toList());
 
             userEventsSortedByDate.put(entry.getKey(), listSortedEvents);
 
-        });
+        }
 
-        Date dateTemp = null;
+        //Date dateTemp = null;
         Long consecutiveEvents = 0L;
         String currentUser = null;
         Long maxConsecutiveEvents = 0L;
@@ -178,29 +171,22 @@ public class GithubApiRestController {
 
             for(UserEvent e : entry.getValue()){
                 if(! e.getLogin().equals(currentUser) ){
-                    dateTemp = e.getCreatedAt();
                     currentUser = e.getLogin();
                     consecutiveEvents = 0L; //reset consecutive days
                     maxConsecutiveEvents = 0L;
                     userEventCount.put(e.getLogin(), e);
-                    calendarTemp.setTime(dateTemp);
+                    calendarTemp.setTime(e.getCreatedAt());
                     continue;
                 }
-
-
-
 
                 Calendar created = Calendar.getInstance();
                 created.setTime(e.getCreatedAt());
 
-                //long diffInMillies = Math.abs(e.getCreatedAt().getTime() - dateTemp.getTime());
-                //long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.HOURS);
+                // long diffInMillies = Math.abs(e.getCreatedAt().getTime() - dateTemp.getTime());
+                // long diff = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.DAYS);
 
-               // if(diff < 1  ){
                 if(((created.get(Calendar.DAY_OF_MONTH) - calendarTemp.get(Calendar.DAY_OF_MONTH))) == 1){
-
                     consecutiveEvents++;
-
                 } else {
                     consecutiveEvents = 0L; //reset consecutive events
                 }
@@ -210,7 +196,6 @@ public class GithubApiRestController {
                 }
                 userEventCount.put(e.getLogin(), e);
                 userEventCount.get(currentUser).setCount(maxConsecutiveEvents);
-                dateTemp = e.getCreatedAt();
             }
 
         }
@@ -219,79 +204,25 @@ public class GithubApiRestController {
                 userEventCount.entrySet()
                         .stream()
                         .map(e -> e.getValue())
-                        .sorted(new Comparator<UserEvent>() {
-                            @Override
-                            public int compare(UserEvent o1, UserEvent o2) {
-                                return o2.getCount().compareTo(o1.getCount());
+                        .sorted(Comparator.comparing(UserEvent::getCount).reversed())
+                        .sorted((o1, o2) -> {
+                            if(o1.getCount() == o2.getCount()){
+                                return o2.getCreatedAt().compareTo(o1.getCreatedAt());
                             }
+                            return 0;
                         })
-                        .sorted(new Comparator<UserEvent>() {
+                        .sorted( (o1, o2) -> {
+                            if(o2.getCreatedAt().equals(o1.getCreatedAt())
+                                    && o2.getCount() == (o1.getCount()) ){
 
-                            @Override
-                            public int compare(UserEvent o1, UserEvent o2) {
-                                if(o1.getCount() == o2.getCount()){
-                                    return o2.getCreatedAt().compareTo(o1.getCreatedAt());
-                                }
-                                return 0;
+                                return o1.getLogin().compareTo(o2.getLogin());
                             }
-                        })
-                        .sorted(new Comparator<UserEvent>() {
+                            return 0;
 
-                            @Override
-                            public int compare(UserEvent o1, UserEvent o2) {
-                                if(o2.getCreatedAt().equals(o1.getCreatedAt())
-                                        && o2.getCount() == (o1.getCount()) ){
-
-                                    return o1.getLogin().compareTo(o2.getLogin());
-                                }
-                                return 0;
-                            }
                         }).collect(Collectors.toList());
 
         return result;
 
     }
-
-
-    private List<UserEvent> builActorStatiscts(){
-        Instant agora = Instant.now();
-
-        List<UserEvent> as = new ArrayList<>();
-
-        as.add(new UserEvent(12L, "marcelo", "", Date.from(agora.plusSeconds(3600 * 200))));
-
-        as.add(new UserEvent(12L, "marcelo", "",Date.from(agora.plusSeconds(0))));
-        as.add(new UserEvent(12L, "marcelo","", Date.from(agora.plusSeconds(3600))));
-        as.add(new UserEvent(12L, "marcelo","", Date.from(agora.plusSeconds(3610))));
-        as.add(new UserEvent(12L, "marcelo","", Date.from(agora.plusSeconds(3600 * 70))));
-        as.add(new UserEvent(12L, "marcelo","", Date.from(agora.plusSeconds(3600 * 71))));
-
-        //as.add(new UserEvent(12L, "marcelo","", Date.from(agora.plusSeconds(3600 * 70))));
-
-        //as.add(new UserEvent(12L, "marcelo","", Date.from(agora.plusSeconds(3600 * 60))));
-        //as.add(new UserEvent(12L, "marcelo","", Date.from(agora.plusSeconds(3600 * 90))));
-
-
-        as.add(new UserEvent(13L, "alex","", Date.from(agora.plusSeconds(3601))));
-        as.add(new UserEvent(13L, "alex","", Date.from(agora.plusSeconds(3600 * 2))));
-
-
-        as.add(new UserEvent(14L, "ze", "", Date.from(agora.plusSeconds(3605))));
-        as.add(new UserEvent(14L, "ze", "", Date.from(agora.plusSeconds(3605 * 2))));
-        as.add(new UserEvent(14L, "ze", "", Date.from(agora.plusSeconds(3610 * 2))));
-
-
-        return as;
-    }
-
-    public static  void main(String arsg[]){
-        Calendar c1 = Calendar.getInstance();
-        Calendar c2 = Calendar.getInstance();
-
-        c1.add(Calendar.HOUR_OF_DAY, 23);
-
-        System.out.println(c1.get(Calendar.DAY_OF_MONTH) - c2.get(Calendar.DAY_OF_MONTH));
-    }
-
 
 }
