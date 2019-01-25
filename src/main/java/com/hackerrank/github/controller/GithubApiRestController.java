@@ -18,18 +18,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-/*
-Returning the actor records ordered by the maximum streak:
-The service should be able to return the JSON array of all the actors sorted by the maximum streak
- (i.e., the total number of consecutive days actor has pushed an event to the system)
-  in descending order by the GET request at /actors/streak.
-  If there are more than one actors with the same maximum streak,
-  then order them by the timestamp of the latest event in the descending order.
-   If more than one actors have the same timestamp for the latest event,
-   then order them by the alphabetical order of login.
-    The HTTP response code should be 200.
 
- */
 
 @RestController
 public class GithubApiRestController {
