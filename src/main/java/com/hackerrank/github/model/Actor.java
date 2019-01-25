@@ -5,13 +5,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.UniqueConstraint;
+import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Entity
 public class Actor {
 
     @Id
     private Long id;
+
+    @NotNull
     @Column(unique = true)
     private String login;
 
@@ -49,5 +52,29 @@ public class Actor {
     
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Actor actor = (Actor) o;
+        return Objects.equals(id, actor.id) &&
+                Objects.equals(login, actor.login) &&
+                Objects.equals(avatar, actor.avatar);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, login, avatar);
+    }
+
+    @Override
+    public String toString() {
+        return "Actor{" +
+                "id=" + id +
+                ", login='" + login + '\'' +
+                ", avatar='" + avatar + '\'' +
+                '}';
     }
 }

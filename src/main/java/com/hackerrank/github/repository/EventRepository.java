@@ -2,8 +2,7 @@ package com.hackerrank.github.repository;
 
 import com.hackerrank.github.model.ActorStatistics;
 import com.hackerrank.github.model.Event;
-
-import com.hackerrank.github.model.UserEvent;
+import com.hackerrank.github.model.StreakInfo;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -19,10 +18,8 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     @Query("SELECT " +
             "    new com.hackerrank.github.model.ActorStatistics(" +
-            "            e.actor.id, " +
-            "            e.actor.login," +
+            "            e.actor, " +
             "            COUNT(e), " +
-            "            e.actor.avatar," +
             "            max(e.createdAt) " +
             "    ) " +
             "FROM " +
@@ -31,18 +28,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "    e.actor.login")
     List<ActorStatistics> findActorStatistics();
 
-    @Query("SELECT " +
-            "    new com.hackerrank.github.model.UserEvent(" +
-            "            e.actor.id, " +
-            "            e.actor.login," +
-            "            e.actor.avatar," +
-            "            e.createdAt" +
-            "    ) " +
-            "FROM " +
-            "    Event e " +
-            "ORDER BY " +
-            "    e.actor.login")
-    List<UserEvent> findUserEventsGroupByUser();
+
 
 
 }

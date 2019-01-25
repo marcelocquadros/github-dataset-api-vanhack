@@ -1,57 +1,62 @@
 package com.hackerrank.github.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ActorStatistics {
 
-    private Long id;
-    private String login;
+    private Actor actor;
 
-    @JsonIgnore
     private Long count;
 
-    @JsonProperty("avatar_url")
-    private String avatar;
-
-    @JsonIgnore
     private Date lastEventDate;
 
-    public ActorStatistics(Long id, String login, Long count, String avatar, Date lastEventDate) {
-        this.id = id;
-        this.login = login;
+    public ActorStatistics(Actor actor, Long count, Date lastEventDate) {
         this.count = count;
-        this.avatar = avatar;
         this.lastEventDate = lastEventDate;
+        this.actor = actor;
     }
 
-    @Override
-    public String toString() {
-        return "ActorStatistics{" +
-                "id=" + id +
-                ", login='" + login + '\'' +
-                ", count=" + count +
-                ", avatar='" + avatar + '\'' +
-                ", lastEventDate=" + lastEventDate +
-                '}';
+    public static List<Actor> sort(List<ActorStatistics> actorStatistics) {
+
+        List<Actor> result = actorStatistics.stream()
+                .sorted(Comparator.comparing(ActorStatistics::getCount).reversed())
+                .collect(Collectors.toList())
+                .stream()
+                .sorted((e1, e2) -> {
+
+                    if(e1.getCount() == e2.getCount()){
+                        return e2.getLastEventDate().compareTo(e1.getLastEventDate());
+                    }
+                    return 0;
+                })
+                .collect(Collectors.toList())
+                .stream()
+                .sorted((e1, e2) -> {
+
+                    if ((e2.getCount() == e1.getCount())
+                            && e1.getLastEventDate().equals(e2.getLastEventDate())) {
+
+                        e1.getActor().getLogin().compareTo(e2.getActor().getLogin());
+
+                    }
+                    return 0;
+
+                })
+                .map(e -> e.getActor())
+                .collect(Collectors.toList());
+
+        return result;
     }
 
-    public Long getId() {
-        return id;
+    public Actor getActor() {
+        return actor;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getLogin() {
-        return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
+    public void setActor(Actor actor) {
+        this.actor = actor;
     }
 
     public Long getCount() {
@@ -60,14 +65,6 @@ public class ActorStatistics {
 
     public void setCount(Long count) {
         this.count = count;
-    }
-
-    public String getAvatar() {
-        return avatar;
-    }
-
-    public void setAvatar(String avatar) {
-        this.avatar = avatar;
     }
 
     public Date getLastEventDate() {

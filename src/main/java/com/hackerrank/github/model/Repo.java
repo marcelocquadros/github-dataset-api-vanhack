@@ -3,6 +3,7 @@ package com.hackerrank.github.model;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Entity
 public class Repo {
@@ -47,5 +48,29 @@ public class Repo {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Repo repo = (Repo) o;
+        return Objects.equals(id, repo.id) &&
+                Objects.equals(name, repo.name) &&
+                Objects.equals(url, repo.url);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name, url);
+    }
+
+    @Override
+    public String toString() {
+        return "Repo{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", url='" + url + '\'' +
+                '}';
     }
 }
