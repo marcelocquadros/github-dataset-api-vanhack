@@ -1,5 +1,7 @@
 package com.hackerrank.github.model;
 
+import com.hackerrank.github.model.entities.Event;
+
 import java.util.*;
 import java.util.stream.Collectors;
 

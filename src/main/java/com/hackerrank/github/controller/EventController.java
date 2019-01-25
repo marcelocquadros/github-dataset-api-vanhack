@@ -2,7 +2,7 @@ package com.hackerrank.github.controller;
 
 import com.hackerrank.github.exceptions.ActorNotFoundException;
 import com.hackerrank.github.exceptions.EventAlreadyExistsException;
-import com.hackerrank.github.model.Event;
+import com.hackerrank.github.model.entities.Event;
 import com.hackerrank.github.repository.ActorRepository;
 import com.hackerrank.github.repository.EventRepository;
 import org.slf4j.Logger;
@@ -13,7 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.*;
+import java.util.List;
 
 
 @RestController
@@ -63,8 +63,6 @@ public class EventController {
 
         return eventRepository.findByActorIdOrderByIdAsc(actorID);
     }
-
-
 
 
 }

@@ -1,7 +1,7 @@
 package com.hackerrank.github.repository;
 
 
-import com.hackerrank.github.model.Actor;
+import com.hackerrank.github.model.entities.Actor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

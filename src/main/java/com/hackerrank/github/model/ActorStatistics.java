@@ -1,5 +1,7 @@
 package com.hackerrank.github.model;
 
+import com.hackerrank.github.model.entities.Actor;
+
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;

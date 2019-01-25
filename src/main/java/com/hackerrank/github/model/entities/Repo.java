@@ -1,4 +1,4 @@
-package com.hackerrank.github.model;
+package com.hackerrank.github.model.entities;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

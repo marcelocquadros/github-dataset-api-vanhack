@@ -1,9 +1,9 @@
 package com.hackerrank.github.controller;
 
 import com.hackerrank.github.exceptions.ActorNotFoundException;
-import com.hackerrank.github.model.Actor;
+import com.hackerrank.github.model.entities.Actor;
 import com.hackerrank.github.model.ActorStatistics;
-import com.hackerrank.github.model.Event;
+import com.hackerrank.github.model.entities.Event;
 import com.hackerrank.github.model.StreakInfo;
 import com.hackerrank.github.repository.ActorRepository;
 import com.hackerrank.github.repository.EventRepository;
@@ -15,7 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.*;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
