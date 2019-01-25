@@ -17,10 +17,10 @@ public class Event {
 
     private String type;
 
-    @ManyToOne
+    @ManyToOne( cascade = CascadeType.MERGE)
     private Actor actor;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.MERGE)
     private Repo repo;
 
     @JsonProperty("created_at")

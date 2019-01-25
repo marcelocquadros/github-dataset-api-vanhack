@@ -1,6 +1,7 @@
 package com.hackerrank.github.controller;
 
 import com.hackerrank.github.exceptions.ActorNotFoundException;
+import com.hackerrank.github.exceptions.EventAlreadyExistsException;
 import com.hackerrank.github.model.*;
 import com.hackerrank.github.repository.ActorRepository;
 import com.hackerrank.github.repository.EventRepository;
@@ -49,29 +50,15 @@ public class GithubApiRestController {
         this.eventRepository.deleteAll();
     }
 
+
+    //note -> user and repo could be updated using this method!
     @PostMapping("/events")
     public ResponseEntity createEvent(@RequestBody Event event ){
 
         if(this.eventRepository.findOne(event.getId()) != null){
             LOG.error("The resource id: {} already exists", event.getId());
-            //throw new EventAlreadyExistsException();
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            throw new EventAlreadyExistsException();
         }
-
-
-        //prevent to update user in
-        Actor actorDB = this.actorRepository.findOne(event.getActor().getId());
-
-        if(actorDB == null){
-            actorDB = this.actorRepository.save(event.getActor());
-        }
-
-        Repo repoDB = this.repoRepository.findOne(event.getRepo().getId());
-        if(repoDB == null){
-            repoDB = this.repoRepository.save(event.getRepo());
-        }
-        event.setRepo(repoDB);
-        event.setActor(actorDB);
 
         this.eventRepository.save(event);
 
@@ -206,21 +193,14 @@ public class GithubApiRestController {
                 Calendar created = Calendar.getInstance();
                 created.setTime(e.getCreatedAt());
 
-                calendarTemp.add(Calendar.DAY_OF_MONTH, 1);
-
-
-
-
-
-
                 //long diffInMillies = Math.abs(e.getCreatedAt().getTime() - dateTemp.getTime());
                 //long diff = TimeUnit.HOURS.convert(diffInMillies, TimeUnit.HOURS);
 
                // if(diff < 1  ){
-                if((created.get(Calendar.DAY_OF_MONTH) == calendarTemp.get(Calendar.DAY_OF_MONTH))){
+                if(((created.get(Calendar.DAY_OF_MONTH) - calendarTemp.get(Calendar.DAY_OF_MONTH))) == 1){
 
                     consecutiveEvents++;
-                    userEventCount.put(e.getLogin(), e);
+
                 } else {
                     consecutiveEvents = 0L; //reset consecutive events
                 }
@@ -228,7 +208,7 @@ public class GithubApiRestController {
                 if(maxConsecutiveEvents < consecutiveEvents){
                     maxConsecutiveEvents = consecutiveEvents;
                 }
-
+                userEventCount.put(e.getLogin(), e);
                 userEventCount.get(currentUser).setCount(maxConsecutiveEvents);
                 dateTemp = e.getCreatedAt();
             }
@@ -260,8 +240,7 @@ public class GithubApiRestController {
                             @Override
                             public int compare(UserEvent o1, UserEvent o2) {
                                 if(o2.getCreatedAt().equals(o1.getCreatedAt())
-                                        && o2.getCount() == (o1.getCount())
-                                        && !o2.getLogin().equals(o1.getLogin()) ){
+                                        && o2.getCount() == (o1.getCount()) ){
 
                                     return o1.getLogin().compareTo(o2.getLogin());
                                 }
