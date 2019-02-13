@@ -36,7 +36,7 @@ public class StreakInfo {
                 })
                 .sorted( (o1, o2) -> {
                     if(o2.getCreatedAt().equals(o1.getCreatedAt())
-                            && o2.getCount() == (o1.getCount()) ){
+                            && o2.getCount() == o1.getCount() ){
 
                         return o1.getLogin().compareTo(o2.getLogin());
                     }
